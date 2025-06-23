@@ -1,0 +1,197 @@
+#include <stdio.h>
+#include <stdlib.h>
+struct Node {
+  int id;
+  float gpa;
+  struct Node *prev;
+  struct Node *next;
+};
+struct Node *createSortedList(struct Node *head) {
+  if (head == NULL) {
+    return NULL;
+  }
+
+  struct Node *sorted_head = NULL;
+  struct Node *current = head;
+
+  while (current != NULL) {
+    struct Node *next = current->next;
+    current->prev = NULL;
+    current->next = NULL;
+
+    if (sorted_head == NULL) {
+      sorted_head = current;
+    } else {
+      struct Node *temp = sorted_head;
+      struct Node *prev = NULL;
+
+      while (temp != NULL && temp->gpa > current->gpa) {
+        prev = temp;
+        temp = temp->next;
+      }
+
+      if (prev != NULL) {
+        prev->next = current;
+        current->prev = prev;
+      } else {
+        sorted_head = current;
+      }
+
+      current->next = temp;
+      if (temp != NULL) {
+        temp->prev = current;
+      }
+    }
+
+    current = next;
+  }
+
+  return sorted_head;
+}
+struct Node *rotateByKplaces(struct Node *head, int k) {
+  // Code to rotate the dll by k places to the right and return new head(4.5)
+  struct Node *current = head;
+  while (current->next != NULL) {
+    current = current->next;
+  }
+  current->next = head;
+  head->prev = current;
+  struct Node *a = current;
+  for (int i = 0; i < k; i++) {
+    a = a->prev;
+  }
+  struct Node *b = a->next;
+  b->prev = NULL;
+  a->next = NULL;
+  return b;
+}
+struct Node *removeDuplicates(struct Node *head, int id) {
+  // Code to delete all occurences of the record id and
+  // keep only the oldest record with id=id and return new head(4.3)
+  struct Node *current = head;
+  struct Node *oldest = NULL;
+
+  while (current != NULL) {
+    if (current->id == id) {
+      if (oldest == NULL) {
+        oldest = current;
+      }
+    }
+    current = current->next;
+  }
+  current = oldest->next;
+  struct Node *prev = oldest;
+
+  while (current != NULL) {
+    if (current->prev->id != id)
+      prev = current->prev;
+    if (current->id == id && current->next != NULL) {
+      prev->next = current->next;
+      current->next->prev = prev;
+    }
+    if (current->id == id && current->next == NULL)
+      prev->next = NULL;
+    current = current->next;
+  }
+
+  return head;
+}
+struct Node *deleteHead(struct Node *head) {
+  // Code to delete head from the dll and return new head(4.2)
+  if (head == NULL) {
+    return (NULL);
+  }
+  struct Node *newnode = head->next;
+  newnode->prev=NULL;
+  free(head);
+  return (newnode);
+}
+struct Node *reverse(struct Node *head) {
+  // Code to reverse and dll return new head(4.4)
+
+  struct Node *current = head;
+  while (current->next != NULL) {
+    current = current->next;
+  }
+  struct Node *newhead = current;
+  newhead->prev = NULL;
+  struct Node *p;
+  while (current != NULL) {
+    p = head;
+    if (current != head) {
+      while (p->next != current) {
+        p = p->next;
+      }
+      current->next = p;
+      p->prev = current;
+      current = p;
+    } else {
+      current->next = NULL;
+      current = NULL;
+    }
+  }
+  return newhead;
+}
+int main() {
+  int n, k, duplicate_id;
+  scanf("%d %d %d", &n, &k, &duplicate_id);
+  struct Node *head = NULL;
+  struct Node *sorted_head = NULL;
+  struct Node *tail = NULL;
+  for (int i = 0; i < n; i++) {
+    int data;
+    float grade;
+    scanf("%d %f", &data, &grade);
+
+    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
+    newNode->id = data;
+    newNode->gpa = grade;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+
+    if (head == NULL) {
+      head = newNode;
+      tail = newNode;
+    } else {
+      newNode->prev = tail;
+      tail->next = newNode;
+    }
+    tail = newNode;
+  }
+  head = deleteHead(head);
+  head = removeDuplicates(head, duplicate_id);
+  head = reverse(head);
+  head = rotateByKplaces(head, k);
+  struct Node *curr = head;
+  tail = head;
+  // print head
+  while (curr != NULL) {
+    printf("%d,%.1f->", curr->id, curr->gpa);
+    tail = curr;
+    curr = curr->next;
+  }
+  printf("\n");
+  // print head in reverse ordre
+  while (tail != NULL) {
+    printf("%d,%.1f->", tail->id, tail->gpa);
+    tail = tail->prev;
+  }
+  sorted_head = createSortedList(head);
+  printf("\n");
+  curr = sorted_head;
+  tail = curr;
+  // print sorted_head in reverse ordre
+  while (curr != NULL) {
+    printf("%d,%.1f->", curr->id, curr->gpa);
+    tail = curr;
+    curr = curr->next;
+  }
+  printf("\n");
+  // print sorted_head in reverse ordre
+  while (tail != NULL) {
+    printf("%d,%.1f->", tail->id, tail->gpa);
+    tail = tail->prev;
+  }
+  printf("\n");
+  return 0;
+}
